@@ -120,7 +120,7 @@ cd BuptBlockEmulator
 
 ### 2. Download the Dataset
 
-Follow the instructions in [`dataset/README.md`](./dataset/README.md) to download the XBlock-ETH transaction dataset.
+Follow the instructions in [`dataset-preparation`](README.md#dataset-preparation) to download the XBlock-ETH transaction dataset.
 
 Extract or place the transaction data under the `dataset/` directory. The complete dataset and locally sampled files are not included in this repository.
 
