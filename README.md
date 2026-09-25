@@ -238,6 +238,8 @@ Experimental results are written to the directory specified by `ExpDataRootDir`.
 | `Latency_Relay.csv` | Transaction confirmation latency. |
 | `TxPool_Relay.csv` | Transaction-pool queue length. |
 
+---
+
 ## Communication accounting
 
 In lightweight mode, a leader caches immutable transaction encodings and queues them for asynchronous dissemination to shard replicas. A proposal carries the encoded block header, content identifiers, and the original request digest. Replicas reconstruct transaction bodies from their caches; missing bodies are retrieved through actual request/response messages. The reconstructed request must match its original digest before entering the PBFT validation path.
