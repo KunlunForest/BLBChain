@@ -1,0 +1,30 @@
+# 不要上传实验结果！
+# Do not upload your experimental results!
+expTest
+
+# 不要上传可执行文件！
+# Do not upload your executable files!
+*.exe
+
+# 本地编译产物、运行日志与备份
+/blockEmulator
+/blockEmulato
+/logs/
+*.log
+*.backup
+
+# 数据集仅保留在本地，下载方式见 dataset/README.md
+/dataset/**/*.csv
+/dataset/**/*.zip
+/dataset/**/*.gz
+/dataset/**/*.tar
+/dataset/**/*.7z
+/dataset/**/*.temp
+/dataset/**/*.part
+/selectedTxs*.csv
+
+# Generated overhead experiments and release archives
+/experiments/runs/
+/releases/
+__pycache__/
+*.pyc
