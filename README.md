@@ -101,6 +101,143 @@ Useful options:
 
 Use `python experiments/run_overhead.py --help` for all arguments. Do not interpret timeouts as valid low-throughput or zero-latency results.
 
+---
+
+## Getting Started
+
+### Prerequisites
+
+- **Go 1.18 or later**
+- Linux, macOS, or Windows
+- The XBlock-ETH transaction dataset described in `dataset/README.md`
+
+### 1. Clone the Repository
+
+```bash
+git clone https://gitee.com/jin-r/BuptBlockEmulator.git
+cd BuptBlockEmulator
+```
+
+### 2. Download the Dataset
+
+Follow the instructions in [`dataset/README.md`](./dataset/README.md) to download the XBlock-ETH transaction dataset.
+
+Extract or place the transaction data under the `dataset/` directory. The complete dataset and locally sampled files are not included in this repository.
+
+### 3. Configure the Experiment
+
+Edit `paramsConfig.json`. An example configuration is shown below:
+
+```json
+{
+  "ConsensusMethod": 4,
+  "ShardNum": 4,
+  "NodeNumPerShard": 4,
+  "DatasetFile": "./dataset/0to999999_BlockTransaction.csv",
+  "TotalDataNum": 300000,
+  "BatchSize": 2000,
+  "InjectSpeed": 5000,
+  "BlockSize": 2000,
+  "BlockInterval": 5000,
+  "ExpDataRootDir": "./expTest/"
+}
+```
+
+> **Important:** Set `"ConsensusMethod": 4` to enable `PLouvainCommittee`. With this option enabled, the system automatically executes the improved P-Louvain partitioning pipeline before transaction injection.
+
+For distributed deployment, edit `ipTable.json` and configure the IP address of each node.
+
+### Configuration Parameters
+
+| Parameter | Description |
+|---|---|
+| `ConsensusMethod` | Consensus or committee mode. Set it to `4` to enable `PLouvainCommittee`. |
+| `ShardNum` | Number of shards. |
+| `NodeNumPerShard` | Number of consensus nodes in each shard. |
+| `DatasetFile` | Path to the input transaction dataset. |
+| `TotalDataNum` | Number of transactions loaded for the experiment. |
+| `BatchSize` | Number of transactions in each injection batch. |
+| `InjectSpeed` | Transaction injection rate. |
+| `BlockSize` | Maximum number of transactions in a block. |
+| `BlockInterval` | Block-generation interval. |
+| `ExpDataRootDir` | Directory used to store experimental results. |
+
+### 4. Generate the Launch Scripts
+
+On Linux or macOS:
+
+```bash
+go run main.go -g
+```
+
+On Windows:
+
+```powershell
+.\blockEmulator_Windows_Precompile.exe -g
+```
+
+### 5. Start the Shard Nodes
+
+On Linux or macOS:
+
+```bash
+bash ./shell/run.sh
+```
+
+On Windows:
+
+```powershell
+.\shell\run.bat
+```
+
+A node can also be started manually. For example:
+
+```bash
+go run main.go -n 0 -N 4 -s 0 -S 4 -c
+```
+
+| Argument | Description |
+|---|---|
+| `-n` | Node ID within a shard. |
+| `-N` | Number of nodes in each shard. |
+| `-s` | Shard ID. |
+| `-S` | Total number of shards. |
+| `-c` | Start the process as a consensus node. |
+
+### 6. Start the Supervisor
+
+After all shard nodes have been started, launch the supervisor:
+
+```bash
+go run main.go -S 4 -N 4 -s -1 -n 0
+```
+
+The supervisor invokes `PLouvainCommittee.MsgSendingControl()`, which executes the following workflow:
+
+1. Load transactions from the CSV dataset.
+2. Construct the weighted account-interaction graph.
+3. Execute the four-stage improved P-Louvain algorithm.
+4. Generate the account-to-shard mapping.
+5. Dispatch transactions to the corresponding shards according to the partitioning result.
+
+---
+
+## Experimental Outputs
+
+Experimental results are written to the directory specified by `ExpDataRootDir`. The default output directory is:
+
+```text
+./expTest/
+```
+
+### Standard BlockEmulator Metrics
+
+| Output file | Metric |
+|---|---|
+| `TPS_Relay.csv` | System throughput in transactions per second. |
+| `Latency_Relay.csv` | Transaction confirmation latency. |
+| `TxPool_Relay.csv` | Transaction-pool queue length. |
+
 ## Communication accounting
 
 In lightweight mode, a leader caches immutable transaction encodings and queues them for asynchronous dissemination to shard replicas. A proposal carries the encoded block header, content identifiers, and the original request digest. Replicas reconstruct transaction bodies from their caches; missing bodies are retrieved through actual request/response messages. The reconstructed request must match its original digest before entering the PBFT validation path.
